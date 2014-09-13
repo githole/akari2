@@ -1,0 +1,37 @@
+# Blender MTL File: 'way.blend'
+# Material Count: 5
+
+newmtl GroundM
+diffuse 0.0 0.0 0.0
+specular 0.5 0.5 0.5
+specular_coefficient 100.0
+metalic 1.0
+endmtl
+
+newmtl LineAM
+diffuse 0.8 0.2 0.2
+specular 0 0 0
+specular_coefficient 0.0
+metalic 0.0
+endmtl
+
+newmtl LineBM
+diffuse 0.2 0.8 0.2
+specular 0 0 0
+specular_coefficient 0.0
+metalic 0.0
+endmtl
+
+newmtl LineCM
+diffuse 0.2 0.2 0.8
+specular 0 0 0
+specular_coefficient 0.0
+metalic 0.0
+endmtl
+
+newmtl WallM
+diffuse 0.8 0.8 0.8
+specular 0.2 0.2 0.2
+specular_coefficient 50.0
+metalic 0.0
+endmtl
