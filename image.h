@@ -4,6 +4,7 @@
 #include <memory>
 #include <algorithm>
 #include <vector>
+#include <cstring>
 #include "vec3.h"
 
 
@@ -95,6 +96,8 @@ private:
 public:
 
 	static bool load(const char *filename, Image *image) {
+		printf("[%s]", filename);
+
 		std::shared_ptr<FILE> fp(fopen(filename, "rb"), [](FILE *f){ if (f != NULL) fclose(f); });
 
 		const int BufSize = 4096;
@@ -232,6 +235,7 @@ public:
 	}
 
 	static void save(const char *filename, Image *image, bool absolute = false) {
+
 		std::shared_ptr<FILE> fp(fopen(filename, "wb"), [](FILE *f){ if (f != NULL) fclose(f); });
 
 		if (fp == NULL) {
@@ -259,10 +263,11 @@ public:
 			for (int j = 0; j < width; ++ j) {
 				Color color = image->at(j, i);
 				if (absolute) {
-					color.x = abs(color.x);
-					color.y = abs(color.y);
-					color.z = abs(color.z);
+					color.x = fabs(color.x);
+					color.y = fabs(color.y);
+					color.z = fabs(color.z);
 				}
+
 				HDRPixel p(color);
 				line.push_back(p);
 			}

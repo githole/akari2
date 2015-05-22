@@ -138,20 +138,18 @@ private:
 		};
 	};
 
-	struct Children {
-		union {
-			struct Node {
-				unsigned flag : 1;
-				unsigned index: 31;
-			} node;
-			struct Leaf {
-				unsigned flag : 1;
-				unsigned nPrimitives: 3;
-				unsigned index: 28;
-			} leaf;
+	union Children {
+		struct Node {
+			unsigned flag : 1;
+			unsigned index: 31;
+		} node;
+		struct Leaf {
+			unsigned flag : 1;
+			unsigned nPrimitives: 3;
+			unsigned index: 28;
+		} leaf;
 
-			unsigned int raw;
-		};
+		unsigned int raw;
 	};
 
 	struct SIMDBVHNode{
@@ -181,10 +179,10 @@ public:
 		for (int i = 0; i < 16; ++i)
 			stats[i] = 0;
 		//std::cout << sizeof(SIMDTrianglePack) << std::endl;
-		__declspec(align(32)) float one_f[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-		__declspec(align(32)) float inf_f[4] = {kINF, kINF, kINF, kINF};
-		__declspec(align(32)) float zero_f[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		__declspec(align(32)) float keps_f[4] = {kEPS, kEPS, kEPS, kEPS};
+		float __attribute__ ((aligned (32))) one_f[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+		float __attribute__ ((aligned (32))) inf_f[4] = {kINF, kINF, kINF, kINF};
+		float __attribute__ ((aligned (32))) zero_f[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+		float __attribute__ ((aligned (32))) keps_f[4] = {kEPS, kEPS, kEPS, kEPS};
 		
 		zero = _mm_load_ps(zero_f);
 		one = _mm_load_ps(one_f);
@@ -206,11 +204,11 @@ public:
 			// 葉
 			int firstPrimOffset = orderedPrims.size();
 
-			SIMDTrianglePack *simdt = (SIMDTrianglePack*)_aligned_malloc(sizeof(SIMDTrianglePack), 16);
+			SIMDTrianglePack *simdt = (SIMDTrianglePack*)aligned_alloc(16, sizeof(SIMDTrianglePack));
 			
-			__declspec(align(16)) float x[4 * 3] = {0};
-			__declspec(align(16)) float y[4 * 3] = {0};
-			__declspec(align(16)) float z[4 * 3] = {0};
+			float __attribute__ ((aligned (32))) x[4 * 3] = {0};
+			float __attribute__ ((aligned (32))) y[4 * 3] = {0};
+			float __attribute__ ((aligned (32))) z[4 * 3] = {0};
 
 			int cnt = 0;
 			for (int i = start; i < end; ++i , ++cnt){
@@ -283,7 +281,7 @@ public:
 						b1 = unionBBox(b1, buckets[j].bounds);
 						count1 += buckets[j].count;
 					}
-					cost[i] += 0.125f + (count0 * b0.surfaceArea() + count1 * b1.surfaceArea()) / bbox.surfaceArea();
+					cost[i] = 0.125f + (count0 * b0.surfaceArea() + count1 * b1.surfaceArea()) / bbox.surfaceArea();
 				}
 
 				float minCost = cost[0];
@@ -315,7 +313,7 @@ public:
 		BVHBuildNode *c[4] = {0};
 		
 		SIMDBVHNode *n;
-		n = (SIMDBVHNode*)_aligned_malloc(sizeof(SIMDBVHNode), 16);
+		n = (SIMDBVHNode*)aligned_alloc(16, sizeof(SIMDBVHNode));
 		simdNodes.push_back(n);
 		n->axis_top = node->splitAxis;
 		n->axis_left = n->axis_right = 0;
@@ -338,7 +336,7 @@ public:
 				c[2] = rc;
 			}
 		}
-		__declspec(align(16)) float bboxes[2][3][4];
+		float __attribute__ ((aligned (32))) bboxes[2][3][4];
 		for (int j = 0; j < 3; ++j) {
 			for (int k = 0; k < 4; ++k) {
 				if (c[k] != NULL) {
@@ -393,9 +391,11 @@ public:
 		int totalNodes = 0;
 		orderedTris.reserve(tris.size());
 
+		std::cout << "Recursive Build" << std::endl;
 		rootNode = recursiveBuild(buildData, 0, tris.size(), &totalNodes, orderedTris);
 
 		// collapse
+		std::cout << "collapse2QBVH" << std::endl;
 		collapse2QBVH(rootNode);
 
 		SIMDBVHNode *root = simdNodes[0];
@@ -450,17 +450,17 @@ public:
 		__m128 sseiDir[3];
 		int sign[3];
 		Float3 idir(1.0f / ray.dir.x, 1.0f / ray.dir.y, 1.0f / ray.dir.z);
-		__declspec(align(16)) float r_idir_x[4] = {idir.x, idir.x, idir.x, idir.x};
-		__declspec(align(16)) float r_idir_y[4] = {idir.y, idir.y, idir.y, idir.y};
-		__declspec(align(16)) float r_idir_z[4] = {idir.z, idir.z, idir.z, idir.z};
+		float __attribute__ ((aligned (16))) r_idir_x[4] = {idir.x, idir.x, idir.x, idir.x};
+		float __attribute__ ((aligned (16))) r_idir_y[4] = {idir.y, idir.y, idir.y, idir.y};
+		float __attribute__ ((aligned (16))) r_idir_z[4] = {idir.z, idir.z, idir.z, idir.z};
 					
-		__declspec(align(16)) float r_org_x[4] = {ray.org.x, ray.org.x, ray.org.x, ray.org.x};
-		__declspec(align(16)) float r_org_y[4] = {ray.org.y, ray.org.y, ray.org.y, ray.org.y};
-		__declspec(align(16)) float r_org_z[4] = {ray.org.z, ray.org.z, ray.org.z, ray.org.z};
+		float __attribute__ ((aligned (16))) r_org_x[4] = {ray.org.x, ray.org.x, ray.org.x, ray.org.x};
+		float __attribute__ ((aligned (16))) r_org_y[4] = {ray.org.y, ray.org.y, ray.org.y, ray.org.y};
+		float __attribute__ ((aligned (16))) r_org_z[4] = {ray.org.z, ray.org.z, ray.org.z, ray.org.z};
 
-		__declspec(align(16)) float r_dir_x[4] = {ray.dir.x, ray.dir.x, ray.dir.x, ray.dir.x};
-		__declspec(align(16)) float r_dir_y[4] = {ray.dir.y, ray.dir.y, ray.dir.y, ray.dir.y};
-		__declspec(align(16)) float r_dir_z[4] = {ray.dir.z, ray.dir.z, ray.dir.z, ray.dir.z};
+		float __attribute__ ((aligned (16))) r_dir_x[4] = {ray.dir.x, ray.dir.x, ray.dir.x, ray.dir.x};
+		float __attribute__ ((aligned (16))) r_dir_y[4] = {ray.dir.y, ray.dir.y, ray.dir.y, ray.dir.y};
+		float __attribute__ ((aligned (16))) r_dir_z[4] = {ray.dir.z, ray.dir.z, ray.dir.z, ray.dir.z};
 					
 		__m128 dir_x = _mm_load_ps(r_dir_x);
 		__m128 dir_y = _mm_load_ps(r_dir_y);
@@ -496,7 +496,7 @@ public:
 
 			if(item.node.flag == 0){
 				const SIMDBVHNode& node = *(simdNodes[item.node.index]);
-				__declspec(align(16)) float now_distance_f[4] = {hitpoint->distance, hitpoint->distance, hitpoint->distance, hitpoint->distance};
+				float __attribute__ ((aligned (16))) now_distance_f[4] = {hitpoint->distance, hitpoint->distance, hitpoint->distance, hitpoint->distance};
 				__m128 now_distance = _mm_load_ps(now_distance_f);
 				const int HitMask = test_AABB(node.bboxes, sseOrg, sseiDir, sign, zero, now_distance);
 
@@ -517,15 +517,15 @@ public:
 			} else {
 
 				// __declspec(align(16)) float no_hit_f[4];
-				__declspec(align(16)) float t_f[4];
-				__declspec(align(16)) float b1_f[4];
-				__declspec(align(16)) float b2_f[4];
+				float __attribute__ ((aligned (16))) t_f[4];
+				float __attribute__ ((aligned (16))) b1_f[4];
+				float __attribute__ ((aligned (16))) b2_f[4];
 				int nohitmask;
 				SIMDTrianglePack *s = simdTris[item.leaf.index];
 				
 				float eps = 1e-4f;
-				__declspec(align(32)) float t0_f[4] = {0.0f - eps, 0.0f - eps, 0.0f - eps, 0.0f - eps};
-				__declspec(align(32)) float t1_f[4] = {1.0f + eps, 1.0f + eps, 1.0f + eps, 1.0f + eps};
+				float __attribute__ ((aligned (32))) t0_f[4] = {0.0f - eps, 0.0f - eps, 0.0f - eps, 0.0f - eps};
+				float __attribute__ ((aligned (32))) t1_f[4] = {1.0f + eps, 1.0f + eps, 1.0f + eps, 1.0f + eps};
 		
 				__m128 t0 = _mm_load_ps(t0_f);
 				__m128 t1 = _mm_load_ps(t1_f);

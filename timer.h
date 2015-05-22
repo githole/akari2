@@ -28,6 +28,31 @@ public:
 	}
 };
 
+#else
+#include <sys/time.h>
+
+class Timer {
+private:
+	double begin_ms, end_ms;
+public:
+	Timer() {}
+
+	void begin() {
+		timeval tv;
+		gettimeofday(&tv, NULL);
+		begin_ms = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
+	}
+
+	// ms
+	float end() {
+		timeval tv;
+		gettimeofday(&tv, NULL);
+		end_ms = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
+
+		return end_ms - begin_ms;
+	}
+};
+
 #endif
 
 } // namespace hstd

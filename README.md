@@ -4,6 +4,10 @@ akari2
 "akari2" is a pysically based renderer.
 In Japanese, the word "akari" means "a light source" or one of the cutest girl in Manga.
 
+Compile
+=====
+`g++ -O3 -msse4.2 -fopenmp -std=c++0x main.cpp`
+
 Copyright (c) 2014 hole
 This software is released under the MIT License (http://kagamin.net/hole/license.txt).
 

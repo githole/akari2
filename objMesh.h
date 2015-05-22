@@ -69,6 +69,7 @@ public:
 			if (ret[0] == "newmtl") {
 				now_material_name = ret[1];
 			} else if (ret[0] == "endmtl") {
+				std::cout << now_material_name << ":" << diffuse << " " << specular << std::endl;
 				matmap->insert(std::pair<std::string, Material>(now_material_name, Material(diffuse, specular, specular_coefficient, metalic)));
 				now_material_name = "";
 			} else if (ret[0] == "diffuse" && ret.size() >= 4) {
@@ -102,6 +103,8 @@ public:
 		MeshBody mesh_body;
 		Material *now_material = NULL;
 
+		MaterialMap *matmap = new MaterialMap();
+
 		for (;;) {
 			std::string now_line;
 			if (!manager.gets(&now_line))
@@ -115,8 +118,9 @@ public:
 			std::vector<std::string> ret = split(now_line, ' ');
 
 			if (ret[0] == "mtllib") {
+				std::cout << "Load Material" << std::endl;
 				// マテリアルの読み込み
-				if (!load_material(ret[1].c_str(), &mesh_body.matmap))
+				if (!load_material(ret[1].c_str(), matmap))
 					return false;
 
 				/*
@@ -126,13 +130,15 @@ public:
 
 			} else if (ret[0] == "usemtl") {
 
-				MaterialMap::iterator result = mesh_body.matmap.find(ret[1]);
-				if (result == mesh_body.matmap.end()) {
+				MaterialMap::iterator result = matmap->find(ret[1]);
+				if (result == matmap->end()) {
 					now_material = NULL;
 				} else {
 					now_material = &(result->second);
 
-//					std::cout << result->second.specular << std::endl;
+					std::cout << ret[1] << ":" << now_material << std::endl;
+
+					// std::cout << result->second.diffuse << " " << result->second.specular << std::endl;
 
 //					now_material = new Material(result->second);
 				}
@@ -167,12 +173,13 @@ public:
 				mesh_body.triangle.push_back(t); 
 			}
 		}
-		MaterialMap::iterator result = mesh_body.matmap.find("Material.001");
+		MaterialMap::iterator result = matmap->find("Material.001");
 		std::cout << &(result->second) << std::endl;
 		std::cout << result->second.specular << std::endl;
-		
 
+		mesh_body.matmap = matmap;		
 		mesh->set(mesh_body);
+
 
 		// BVH作る
 		std::vector<RefTriangle> ref_triangle;
@@ -187,6 +194,7 @@ public:
 			ref_triangle.push_back(tr);
 		}
 
+		std::cout << "Build BVH" << std::endl;
 		mesh->build(ref_triangle);
 
 		return true;

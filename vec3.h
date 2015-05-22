@@ -68,11 +68,11 @@ struct Vec3 {
 	inline Vec3 operator/(const T b) const {
 		return Vec3(x / b, y / b, z / b);
 	}
-	inline const float lengthSquared() const { 
+	inline const float LengthSquared() const { 
 		return x*x + y*y + z*z; 
 	}
-	inline const float length() const { 
-		return sqrt(lengthSquared()); 
+	inline const float Length() const { 
+		return sqrt(LengthSquared()); 
 	}
 	
 	Vec3 operator-() const { 
@@ -87,7 +87,7 @@ inline Vec3<T> operator*(T f, const Vec3<T> &v) {
 
 template <typename T>
 inline Vec3<T> normalize(const Vec3<T> &v) {
-	return v * (1 / v.length()); 
+	return v * (1.0f / v.Length()); 
 }
 
 template <typename T>

@@ -38,7 +38,7 @@ struct MeshBody {
 	std::vector<Float3> vt;
 	std::vector<Float3> vn;
 	std::vector<Triangle> triangle;
-	MaterialMap matmap;
+	MaterialMap* matmap;
 };
 
 struct TriangleElement {
@@ -57,9 +57,14 @@ struct TriangleElement {
 
 class TriangleMesh {
 private:
-	MeshBody body_;
 	QBVH qbvh_;
+	MeshBody body_;
 public:
+	virtual ~TriangleMesh() {
+		if (body_.matmap != NULL)
+			delete body_.matmap;
+	}
+
 	void set(const MeshBody& body) {
 		body_ = body;
 	}

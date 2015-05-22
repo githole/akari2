@@ -35,20 +35,22 @@ int main(int argc, char *argv[]) {
 	float prev_now = timer.end();
 	int image_iteration = 0;
 
-	rt::ImageBasedLight test("asset\\Barce_Rooftop_C_3k.hdr");
+	rt::ImageBasedLight test("asset/Barce_Rooftop_C_3k.hdr");
 	test.create_importance_map(60, 30);
 	
 	Image normal01(0, 0);
-	HDROperator::load("asset\\normal02.hdr", &normal01);
+	HDROperator::load("asset/normal02.hdr", &normal01);
 
 //	test.create_sample_from_importance_map(256, normalize(Float3(0.2, -0.5, 0.2)), Float3(0, 1, 0), rt::PhongBRDF(Color(1, 1, 1), 200));
 
 
 	rt::TriangleMesh mesh;
-//	rt::OBJOperator::load("I:\\3DModel\\sdragon2.obj", &mesh);
-	if (!rt::OBJOperator::load("asset\\scene2.obj", &mesh)) {
+	if (!rt::OBJOperator::load("asset/scene2.obj", &mesh)) {
 		return 0;
 	}
+
+
+	std::cout << "Load done." << std::endl;
 
 	Image image(1920, 1080);
 	const int width = image.width();
@@ -63,7 +65,7 @@ int main(int argc, char *argv[]) {
 	const int kMaxIteration = 10000000;
 
 	
-	omp_set_num_threads(10);
+	omp_set_num_threads(8);
 
 	
 	for (int iteration = 0; iteration < kMaxIteration; ++iteration) {
@@ -149,7 +151,6 @@ int main(int argc, char *argv[]) {
 								rt::PhongBRDF phong(material->specular, material->specular_coefficient);
 								rt::LambertianBRDF lambertian(material->diffuse);
 							
-								// std::cout << material->specular << " " << material->diffuse << " " << material->specular_coefficient << std::endl;
 
 								if (random.next01() < material->metalic) {
 									// スペキュラ
@@ -168,6 +169,7 @@ int main(int argc, char *argv[]) {
 							
 								now_ray = rt::Ray(hp_position +  1e-2f * dir, dir);
 								througput = times(color, througput);
+
 							}
 						}
 					}
@@ -201,15 +203,14 @@ int main(int argc, char *argv[]) {
 
 					}
 				}
-				char buf[1024];
-				sprintf(buf, "image_%02d.bmp", image_iteration);
-				exportToBmp(buf, &bmp_arr[0], width, height);
-
-				/*
+				//char buf[1024];
+				//sprintf(buf, "image_%02d.bmp", image_iteration);
+				//exportToBmp(buf, &bmp_arr[0], width, height);
+				
 				char buf[1024];
 				sprintf(buf, "image_%02d.hdr", image_iteration);
 				HDROperator::save(buf, &tmpimage, true);
-				*/
+				
 
 				std::cout << "Save: " << buf << std::endl << std::endl;
 
